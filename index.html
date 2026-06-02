@@ -285,7 +285,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--fm);font-size:13px
 
 <script>
 const GITHUB_RAW = 'https://raw.githubusercontent.com/afaraneda/Dashboard-CEMA/main/data/';
-const FILES = {prod:'ReporteProduccion.csv', tp:'TiemposPerdidos.csv', enc:'EncabezadoNoc.csv'};
+const FILES = {prod:'ReporteProduccion.csv', tp:'TiemposPerdidos.csv', enc:'EncabezadoNoc.csv', b2n:'Base2Noc.csv', pg:'ProductividadGenerico.csv'};
 
 const state = {
   raw:{produccion:[],tiemposPerdidos:[],encabezado:[]},
@@ -336,6 +336,8 @@ async function loadFromGitHub(){
       if(type==='produccion'){state.raw.produccion=parseProd(result.data);setFC('prod','✅',result.data.length.toLocaleString('es-CL')+' registros',true);loaded++;}
       else if(type==='tiempos'){state.raw.tiemposPerdidos=parseTP(result.data);setFC('tp','✅',result.data.length.toLocaleString('es-CL')+' registros',true);loaded++;}
       else if(type==='encabezado'){state.raw.encabezado=parseEnc(result.data);setFC('enc','✅',result.data.length.toLocaleString('es-CL')+' registros',true);loaded++;}
+      if(type==='base2noc'){setFC('b2n','✅',result.data.length.toLocaleString('es-CL')+' registros',true);}
+      if(type==='productividad'){setFC('pg','✅',result.data.length.toLocaleString('es-CL')+' registros',true);}
       log('✅ '+fname+': '+result.data.length.toLocaleString('es-CL')+' filas','ok');
     }catch(e){log('❌ '+fname+': '+e.message,'err');}
   }
@@ -591,6 +593,8 @@ function detectType(cols){
   if(c.some(x=>x.includes('m3ssc'))&&c.some(x=>x.includes('emsefor')))return 'produccion';
   if(c.some(x=>x.includes('tiempo')&&(x.includes('min')||x.includes('perdido'))))return 'tiempos';
   if(c.some(x=>x.includes('volumen_m3_ssc')))return 'encabezado';
+  if(c.some(x=>x.includes('folio'))&&c.some(x=>x.includes('tipo_equipo')))return 'base2noc';
+  if(c.some(x=>x.includes('turno')||x.includes('h_efectiva')||x.includes('m3_hora')))return 'productividad';
   return null;
 }
 function parseProd(rows){
@@ -627,7 +631,7 @@ function parseEnc(rows){
     const v=parseFloat((r[vk]||'0').replace(',','.'))||0;
     const fechak=Object.keys(r).find(k=>k.includes('FECHA_RECEPCION'))||'';
     const rawE=(r[fechak]||'').replace('T',' ').split(' ')[0];const fs=rawE.split('-');let ym='';if(fs.length===3){if(fs[0].length===4){ym=fs[0]+'-'+fs[1].padStart(2,'0');}else{ym=fs[2]+'-'+fs[1].padStart(2,'0');}}
-    return{ym,empresa:(r['NOMBRE_EMPRESARIO']||r[Object.keys(r).find(k=>k.includes('EMPRESARIO'))||'']||'').trim(),zona:(r['ZONA_COSECHA']||'').trim(),destino:(r['DESTINO']||'').trim(),especie:(r['DESC_ESPECIE']||'').trim(),intervencion:(r['INTERVENCION']||'').trim(),estado:(r['ESTADO_MADERA']||'').trim(),equipo:(r['EQUIPO']||'').trim(),vol:v};
+    return{ym,empresa:(r['NOMBRE_EMPRESARIO']||r[Object.keys(r).find(k=>k.toUpperCase().includes('NOMBRE')&&k.toUpperCase().includes('EMPRESARIO'))||'']||'').trim(),zona:(r['ZONA_COSECHA']||'').trim(),destino:(r['DESTINO']||'').trim(),especie:(r['DESC_ESPECIE']||'').trim(),intervencion:(r['INTERVENCION']||'').trim(),estado:(r['ESTADO_MADERA']||'').trim(),equipo:(r['EQUIPO']||'').trim(),vol:v};
   });
 }
 function setFC(key,icon,stat,loaded){
