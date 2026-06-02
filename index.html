@@ -604,9 +604,7 @@ function parseProd(rows){
     const fechak=keys.find(k=>k.toLowerCase()==='fecha')||'';
     const unidk=keys.find(k=>k.toLowerCase().includes('unidad_operativa'))||'';
     const m3=parseFloat((r[m3k]||'0').replace(',','.'))||0;
-    const fs=(r[fechak]||'').split(' ')[0].split('-');
-    let ym='',dia=0;
-    if(fs.length===3){ym=fs[2]+'-'+fs[1].padStart(2,'0');dia=parseInt(fs[0]);}
+    const rawD=(r[fechak]||'').replace('T',' ').split(' ')[0];const fs=rawD.split('-');let ym='',dia=0;if(fs.length===3){if(fs[0].length===4){ym=fs[0]+'-'+fs[1].padStart(2,'0');dia=parseInt(fs[2]);}else{ym=fs[2]+'-'+fs[1].padStart(2,'0');dia=parseInt(fs[0]);}}
     return{ym,dia,empresa:(r[empk]||'').trim(),sigla:(r[siglak]||'').trim(),especie:(r[espk]||'').trim(),zona:(r[zonak]||'').trim(),unidad:(r[unidk]||'').trim(),m3,trozos:0};
   });
 }
@@ -619,8 +617,7 @@ function parseTP(rows){
     const eqk=keys.find(k=>k.toLowerCase().includes('equipo'))||'';
     const fechak=keys.find(k=>k.toLowerCase()==='fecha')||'';
     const min=parseInt(r[mink]||0)||0;
-    const fs=(r[fechak]||'').split('-');
-    let ym='',dia=0;if(fs.length===3){ym=fs[2]+'-'+fs[1].padStart(2,'0');dia=parseInt(fs[0]);}
+    const rawTP2=(r[fechak]||'').replace('T',' ').split(' ')[0];const fs=rawTP2.split('-');let ym='',dia=0;if(fs.length===3){if(fs[0].length===4){ym=fs[0]+'-'+fs[1].padStart(2,'0');dia=parseInt(fs[2]);}else{ym=fs[2]+'-'+fs[1].padStart(2,'0');dia=parseInt(fs[0]);}}
     return{ym,dia,empresa:(r[empk]||'').trim(),equipo:(r[eqk]||'').trim(),descripcion:(r[desk]||'').trim(),min};
   });
 }
@@ -629,8 +626,7 @@ function parseEnc(rows){
     const vk=Object.keys(r).find(k=>k.includes('VOLUMEN_M3_SSC')||k.includes('volumen_m3_ssc'))||'';
     const v=parseFloat((r[vk]||'0').replace(',','.'))||0;
     const fechak=Object.keys(r).find(k=>k.includes('FECHA_RECEPCION'))||'';
-    const fs=(r[fechak]||'').split('-');
-    let ym='';if(fs.length===3){ym=fs[2]+'-'+fs[1].padStart(2,'0');}
+    const rawE=(r[fechak]||'').replace('T',' ').split(' ')[0];const fs=rawE.split('-');let ym='';if(fs.length===3){if(fs[0].length===4){ym=fs[0]+'-'+fs[1].padStart(2,'0');}else{ym=fs[2]+'-'+fs[1].padStart(2,'0');}}
     return{ym,empresa:(r['NOMBRE_EMPRESARIO']||r[Object.keys(r).find(k=>k.includes('EMPRESARIO'))||'']||'').trim(),zona:(r['ZONA_COSECHA']||'').trim(),destino:(r['DESTINO']||'').trim(),especie:(r['DESC_ESPECIE']||'').trim(),intervencion:(r['INTERVENCION']||'').trim(),estado:(r['ESTADO_MADERA']||'').trim(),equipo:(r['EQUIPO']||'').trim(),vol:v};
   });
 }
